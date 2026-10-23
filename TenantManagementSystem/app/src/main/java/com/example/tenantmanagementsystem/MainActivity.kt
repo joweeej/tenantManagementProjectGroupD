@@ -1,44 +1,79 @@
 package com.example.tenantmanagementsystem
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.widget.Toast
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.setupActionBarWithNavController
 import com.example.tenantmanagementsystem.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    // Remembers the most recently saved tenant so CALL TENANT knows whose number to dial
-    private var lastTenant: Tenant? = null
+    // The "driver" that switches Fragments inside the NavHost
+    private lateinit var navController: NavController
+
+    // Tells the App Bar which screens are top-level (no back arrow)
+    private lateinit var appBarConfiguration: AppBarConfiguration
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("TENANT_LIFECYCLE", "MainActivity: onCreate")
+
+        // Create the views from activity_main.xml (Toolbar + NavHost)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.saveButton.setOnClickListener {
-            val name = binding.tenantNameEditText.text.toString()
-            val phone = binding.phoneEditText.text.toString()
-            val rent = binding.rentEditText.text.toString()
+        // 1. Use our Toolbar as the App Bar
+        setSupportActionBar(binding.toolbar)
 
-            val tenant = Tenant(name, phone, rent)
-            binding.tenant = tenant
-            lastTenant = tenant
-        }
+        // 2. Get the NavController from the NavHost
+        val navHostFragment = supportFragmentManager
+            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        navController = navHostFragment.navController
 
-        // Implicit Intent: ask the phone's dialer app to open with the tenant's number typed in
-        binding.callButton.setOnClickListener {
-            val tenant = lastTenant
-            if (tenant == null) {
-                Toast.makeText(this, "Save a tenant first", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
+        // 3. Connect the App Bar to navigation (titles come from each android:label)
+        appBarConfiguration = AppBarConfiguration(navController.graph)
+        setupActionBarWithNavController(navController, appBarConfiguration)
+    }
 
-            val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${tenant.phone}"))
-            startActivity(intent)
-        }
+    // 4. Make the App Bar's back arrow work
+    override fun onSupportNavigateUp(): Boolean {
+        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    }
+
+    // LIFECYCLE LOGS
+    override fun onStart() {
+        super.onStart()
+        Log.d("TENANT_LIFECYCLE", "MainActivity: onStart")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("TENANT_LIFECYCLE", "MainActivity: onResume")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("TENANT_LIFECYCLE", "MainActivity: onPause")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("TENANT_LIFECYCLE", "MainActivity: onStop")
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        Log.d("TENANT_LIFECYCLE", "MainActivity: onRestart")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("TENANT_LIFECYCLE", "MainActivity: onDestroy")
     }
 }
